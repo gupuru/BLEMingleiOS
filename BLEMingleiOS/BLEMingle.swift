@@ -42,6 +42,10 @@ extension String {
         
         return data
     }
+    
+    func separatedComponents(separator: Character) -> [String] {
+        return self.characters.split(separator: separator).map(String.init)
+    }
 }
 
 extension NSData {
@@ -72,6 +76,7 @@ class BLEMingle: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDelegate
     let TRANSFER_CHARACTERISTIC_UUID:String = "08590F7E-DB05-467E-8757-72F6FAEB13D4"
     var centralManager: CBCentralManager!
     var discoveredPeripheral: CBPeripheral!
+    var sendUuid = "E20A39F4-73F5-4BC4-A12F-17D1AD07A961"
     var data: NSMutableData!
     var finalString: String!
     var lastString: NSString!
@@ -305,9 +310,14 @@ class BLEMingle: NSObject, CBPeripheralManagerDelegate, CBCentralManagerDelegate
     func sendMessage(message: String)
     {
         let messageUUID = StringToUUID(hex: message)
+        
+        let name = sendUuid.separatedComponents(separator: "-")
 
-        peripheralManager.stopAdvertising()
-        peripheralManager.startAdvertising([CBAdvertisementDataServiceUUIDsKey: [CBUUID(string: messageUUID)]])
+        if name[0] != "" {
+            peripheralManager.stopAdvertising()
+            peripheralManager.startAdvertising([CBAdvertisementDataLocalNameKey: name[0],
+                                                CBAdvertisementDataServiceUUIDsKey: [CBUUID(string: messageUUID)]])
+        }
     }
     
     func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
